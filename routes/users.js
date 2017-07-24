@@ -44,30 +44,22 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  let noSpecChars = () => {
+  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(username) === true) {
     const err = new Error('User Name must not contain special characters');
       err.status = 400;
-    var special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-    let boo = special.test(username);
-      if (boo === true) {
-        return next(err);
-      }
+      return next(err);
   }
-  noSpecChars();
 
-  let validateEmail = () => {
-    const err = new Error('Email must be correct format');
+
+  if(
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email) === false) {
+    const err = new Error('Email must be correctly formatted');
       err.status = 400;
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    let boo = re.test(email);
-      if (boo === false) {
-        return next(err);
-      }
+      return next(err);
   }
-  validateEmail();
 
   if (!phone) {
-    const err = new Error('Phone numbe is required');
+    const err = new Error('Phone number is required');
     err.status = 400;
     return next(err);
   }
