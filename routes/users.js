@@ -4,9 +4,9 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../knex');
 
-router.get('/' , (req, res, next) => {
+router.get('/', (req, res, next) => {
   knex('users')
-    .select( 'id', 'firstname', 'lastname', 'username', 'phone', 'email')
+    .select('id', 'firstname', 'lastname', 'username', 'phone', 'email')
     .then((results) => {
       res.send(results);
     })
@@ -15,12 +15,67 @@ router.get('/' , (req, res, next) => {
     });
 });
 
-router.post('/' , (req, res, next) => {
-  let firstName = req.body.users.firstName;
-  let lastName = req.body.users.lastName;
-  let username = req.body.users.username;
-  let email = req.body.users.email;
-  let phone = req.body.users.phone;
+router.post('/', (req, res, next) => {
+      let firstName = req.body.users.firstName;
+      let lastName = req.body.users.lastName;
+      let username = req.body.users.username;
+      let email = req.body.users.email;
+      let phone = req.body.users.phone;
+
+  if (!firstName) {
+    const err = new Error('First Name must not be blank');
+    err.status = 400;
+    return next(err);
+  }
+  if (!lastName) {
+    const err = new Error('Last Name must not be blank');
+    err.status = 400;
+    return next(err);
+  }
+  if (username.length < 6) {
+    const err = new Error('User Name must be 6 characters or greater');
+    err.status = 400;
+    return next(err);
+  }
+
+  if (/[a-zA-Z]/.test(username[0]) !== true) {
+    const err = new Error('User Name must start with a letter');
+    err.status = 400;
+    return next(err);
+  }
+
+  let noSpecChars = () => {
+    const err = new Error('User Name must not contain special characters');
+      err.status = 400;
+    var special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    let boo = special.test(username);
+      if (boo === true) {
+        return next(err);
+      }
+  }
+  noSpecChars();
+
+  let validateEmail = () => {
+    const err = new Error('Email must be correct format');
+      err.status = 400;
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    let boo = re.test(email);
+      if (boo === false) {
+        return next(err);
+      }
+  }
+  validateEmail();
+
+  if (!phone) {
+    const err = new Error('Phone numbe is required');
+    err.status = 400;
+    return next(err);
+  }
+  if (phone.length < 10) {
+    const err = new Error('Phone number must be at least 10 digits');
+    err.status = 400;
+    return next(err);
+  }
 
   knex('users')
     .insert({
@@ -30,13 +85,13 @@ router.post('/' , (req, res, next) => {
       email: email,
       phone: phone
     })
-    .returning(['firstname', 'lastname', 'username','phone','email'])
-    .then((results) => {
-      res.send(results[0]);
-    })
-    .catch((err) => {
-      next(err);
-    });
-});
+    .returning(['firstname', 'lastname', 'username', 'phone', 'email'])
+      .then((results) => {
+        res.send(results[0]);
+      })
+      .catch((err) => {
+        next(err);
+      });
+  });
 
 module.exports = router;
