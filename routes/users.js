@@ -63,8 +63,8 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-  if (phone.length < 10) {
-    const err = new Error('Phone number must be at least 10 digits');
+  if (phone.length !== 10) {
+    const err = new Error('Phone number must 10 digits long');
     err.status = 400;
     return next(err);
   }
